@@ -1,0 +1,51 @@
+---
+
+- name: Install perl
+  apt:
+    name: perl
+    state: present
+    update_cache: yes
+
+- name: Download krona into home path
+  get_url:
+    url: https://github.com/marbl/Krona/releases/download/v2.7/KronaTools-2.7.tar
+    dest: /home/ubuntu/krona.tar
+
+- name: Unpack krona tar file
+  unarchive:
+    src: /home/ubuntu/krona.tar
+    dest: /home/ubuntu/
+    remote_src: yes
+
+- name: Remove tar file after unpacking
+  file:
+    state: absent
+    path: /home/ubuntu/krona.tar
+
+- name: Adjust permissions for krona folder
+  file:
+    state: directory
+    path: /home/ubuntu/KronaTools-2.7
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
+
+- name: Execute installation script for krona
+  shell: "./install.pl"
+  args:
+    chdir: /home/ubuntu/KronaTools-2.7
+    creates: /usr/local/bin/ktGetTaxInfo
+    
+- name: Execute updateTaxonomy.sh for krona
+  shell: "./updateTaxonomy.sh"
+  args:
+    chdir: /home/ubuntu/KronaTools-2.7
+    creates: /home/ubuntu/KronaTools-2.7/taxonomy/taxonomy.tab
+    
+- name: Adjust permission for new taxonomy folder
+  file:
+    path: /home/ubuntu/KronaTools-2.7/taxonomy/
+    state: directory
+    recurse: yes
+    owner: ubuntu
+    group: ubuntu
